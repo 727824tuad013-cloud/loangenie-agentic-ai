@@ -45,20 +45,32 @@ elif st.session_state.stage == "sales":
 
 # ---------------- VERIFICATION AGENT ----------------
 elif st.session_state.stage == "verification":
-    log("Verification Agent", "Verifying KYC details")
-    st.write("### 🪪 Verification Agent")
+    log("Verification Agent", "Collecting and verifying KYC details")
+    st.write("### Verification Agent")
 
-    name = st.text_input("Full Name")
-    phone = st.text_input("Phone Number")
+    name = st.text_input("Full Name (as per Aadhaar)")
+    aadhaar = st.text_input("Aadhaar Number (12 digits)", max_chars=12)
+    phone = st.text_input("Mobile Number", max_chars=10)
     city = st.text_input("City")
+    employment = st.selectbox("Employment Type", ["Salaried", "Self-Employed"])
+    company = st.text_input("Company / Business Name")
 
-    if st.button("Verify"):
-        st.session_state.data.update({
-            "name": name,
-            "phone": phone,
-            "city": city
-        })
-        st.session_state.stage = "underwriting"
+    if st.button("Verify KYC"):
+        if len(aadhaar) != 12 or not aadhaar.isdigit():
+            st.error("Invalid Aadhaar number")
+        elif len(phone) != 10 or not phone.isdigit():
+            st.error("Invalid mobile number")
+        else:
+            st.session_state.data.update({
+                "name": name,
+                "aadhaar": aadhaar,
+                "phone": phone,
+                "city": city,
+                "employment": employment,
+                "company": company
+            })
+            st.session_state.stage = "underwriting"
+
 
 # ---------------- UNDERWRITING AGENT ----------------
 elif st.session_state.stage == "underwriting":
@@ -93,32 +105,37 @@ elif st.session_state.stage == "underwriting":
 # ---------------- SANCTION LETTER AGENT ----------------
 elif st.session_state.stage == "sanction":
     log("Sanction Agent", "Generating sanction letter")
-    st.success("🎉 Loan Approved!")
+    st.success("Loan Approved!")
 
     if st.button("Generate Sanction Letter"):
         pdf = FPDF()
         pdf.add_page()
         pdf.set_font("Arial", size=12)
 
+        data = st.session_state.data
+
         pdf.multi_cell(0, 10, f"""
-        TATA CAPITAL – PERSONAL LOAN SANCTION LETTER
+TATA CAPITAL - PERSONAL LOAN SANCTION LETTER
 
-        Name: {st.session_state.data['name']}
-        City: {st.session_state.data['city']}
-        Loan Amount: ₹{st.session_state.data['loan_amount']}
-        Tenure: {st.session_state.data['tenure']} months
-        Credit Score: {st.session_state.data['credit_score']}
+Applicant Name: {data['name']}
+Aadhaar Number: {data['aadhaar']}
+City: {data['city']}
+Monthly Income: Rs. {data['income']}
+Loan Amount: Rs. {data['loan_amount']}
+Tenure: {data['tenure']} months
+Credit Score: {data['credit_score']}
 
-        Status: APPROVED
+Status: APPROVED
         """)
 
         pdf.output("sanction_letter.pdf")
 
         st.download_button(
-            "📄 Download Sanction Letter",
+            "Download Sanction Letter (PDF)",
             open("sanction_letter.pdf", "rb"),
             file_name="sanction_letter.pdf"
         )
+
 
 # ---------------- REJECTION ----------------
 elif st.session_state.stage == "rejected":
