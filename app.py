@@ -2,6 +2,22 @@ import streamlit as st
 from fpdf import FPDF
 import random
 
+# ================= MOCK VERIFIED COMPANY DATABASE =================
+VERIFIED_COMPANIES = [
+    "TATA CONSULTANCY SERVICES",
+    "INFOSYS",
+    "WIPRO",
+    "HCL TECHNOLOGIES",
+    "ACCENTURE",
+    "COGNIZANT",
+    "CAPGEMINI",
+    "TATA MOTORS",
+    "RELIANCE INDUSTRIES",
+    "ICICI BANK",
+    "HDFC BANK"
+]
+
+
 # ================= PAGE CONFIG =================
 st.set_page_config(
     page_title="LoanGenie Agentic AI",
@@ -143,13 +159,12 @@ st.caption("“With LoanGenie AI, we’re turning every chat into a loan opportu
 st.divider()
 
 # ================= MASTER AGENT =================
-if st.session_state.stage == "start":
-    log("Master Agent", "Conversation started")
-    st.markdown('<div class="agent-card">', unsafe_allow_html=True)
-    st.markdown("## 🧠 Master Agent")
-    st.caption("Orchestrates the end-to-end loan journey by coordinating all specialized agents")
-    if st.button("Start Loan Journey"):
+with st.form("start_form"):
+    start = st.form_submit_button("Start Loan Journey")
+    if start:
         st.session_state.stage = "sales"
+        st.rerun()
+
     st.markdown('</div>', unsafe_allow_html=True)
 
 # ================= SALES AGENT =================
@@ -162,10 +177,17 @@ elif st.session_state.stage == "sales":
     loan_amount = st.number_input("Loan Amount (Rs.)", min_value=50000, step=50000)
     tenure = st.selectbox("Tenure (months)", [12, 24, 36, 48])
 
-    if st.button("Proceed to Verification"):
+    with st.form("sales_form"):
+    loan_amount = st.number_input("Loan Amount (Rs.)", min_value=50000, step=50000)
+    tenure = st.selectbox("Tenure (months)", [12, 24, 36, 48])
+
+    submit = st.form_submit_button("Proceed to Verification")
+    if submit:
         st.session_state.data["loan_amount"] = loan_amount
         st.session_state.data["tenure"] = tenure
         st.session_state.stage = "verification"
+        st.rerun()
+
     st.markdown('</div>', unsafe_allow_html=True)
 
 # ================= VERIFICATION AGENT =================
@@ -175,6 +197,7 @@ elif st.session_state.stage == "verification":
     st.markdown("## 🪪 Verification Agent")
     st.caption("Performs identity validation, KYC checks, and basic customer verification")
 
+    with st.form("kyc_form"):
     name = st.text_input("Full Name (as per Aadhaar)")
     aadhaar = st.text_input("Aadhaar Number (12 digits)", max_chars=12)
     phone = st.text_input("Mobile Number", max_chars=10)
@@ -182,7 +205,9 @@ elif st.session_state.stage == "verification":
     employment = st.selectbox("Employment Type", ["Salaried", "Self-Employed"])
     company = st.text_input("Company / Business Name")
 
-    if st.button("Verify KYC"):
+    verify = st.form_submit_button("Verify KYC")
+
+    if verify:
         if len(aadhaar) != 12 or not aadhaar.isdigit():
             st.error("Invalid Aadhaar number")
         elif len(phone) != 10 or not phone.isdigit():
@@ -197,6 +222,8 @@ elif st.session_state.stage == "verification":
                 "company": company
             })
             st.session_state.stage = "underwriting"
+            st.rerun()
+
     st.markdown('</div>', unsafe_allow_html=True)
 
 # ================= UNDERWRITING AGENT =================
@@ -219,11 +246,31 @@ elif st.session_state.stage == "underwriting":
     st.write(f"Pre-approved Limit: Rs. {preapproved_limit}")
     st.write(f"Estimated EMI: Rs. {emi}")
 
-    if st.button("Evaluate Loan"):
-        st.session_state.evaluate_clicked = True
+    with st.form("underwriting_form"):
+    income = st.number_input("Monthly Income (Rs.)", min_value=10000, step=5000)
+    evaluate = st.form_submit_button("Evaluate Loan")
 
-    if st.session_state.evaluate_clicked:
-        st.session_state.evaluate_clicked = False
+    if evaluate:
+        st.session_state.data["income"] = income
+
+        if "credit_score" not in st.session_state.data:
+            st.session_state.data["credit_score"] = random.choice([720, 750, 780])
+
+        credit_score = st.session_state.data["credit_score"]
+        loan = st.session_state.data["loan_amount"]
+        tenure = st.session_state.data["tenure"]
+        emi = int((loan * 1.12) / tenure)
+
+        st.session_state.data["emi"] = emi
+
+        if credit_score >= 700 and emi <= 0.5 * income:
+            st.session_state.stage = "sanction"
+        else:
+            st.session_state.stage = "rejected"
+
+        st.rerun()
+
+
 
         st.session_state.data.update({
             "income": income,
@@ -243,8 +290,10 @@ elif st.session_state.stage == "sanction":
     log("Sanction Agent", "Loan approved")
     st.markdown('<div class="agent-card">', unsafe_allow_html=True)
     st.success("🎉 Loan Approved!")
+if st.button("Generate Sanction Letter"):
+    ...
+    st.rerun()
 
-    if st.button("Generate Sanction Letter"):
         d = st.session_state.data
 
         pdf = FPDF()
