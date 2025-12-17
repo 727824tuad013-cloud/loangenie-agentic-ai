@@ -139,7 +139,7 @@ else:
 
 # ================= MAIN UI =================
 st.title("🤖 LoanGenie – Agentic AI Loan Assistant")
-st.caption("Master Agent orchestrating Sales, Verification, Underwriting & Sanction")
+st.caption("“With LoanGenie AI, we’re turning every chat into a loan opportunity — making banking faster, smarter, and truly human-like.”")
 st.divider()
 
 # ================= MASTER AGENT =================
@@ -286,9 +286,9 @@ elif st.session_state.stage == "rejected":
     st.markdown('</div>', unsafe_allow_html=True)
 
 # ================= AGENT LOGS =================
+# ================= AGENT LOGS =================
 st.divider()
-st.markdown("## 🧠 Agent Orchestration Console")
-st.caption("Tracks real-time communication and decisions across all agents")
+st.write("### 🧠 Agent Activity Log")
 st.markdown('<div class="log-box">', unsafe_allow_html=True)
 for l in st.session_state.logs:
     st.write(l)
