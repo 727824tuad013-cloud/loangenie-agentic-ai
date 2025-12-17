@@ -280,7 +280,8 @@ Status: APPROVED
 elif st.session_state.stage == "rejected":
     log("Underwriting Agent", "Loan rejected")
     st.markdown('<div class="agent-card">', unsafe_allow_html=True)
-    st.error("❌ Loan Rejected")st.markdown("## 🚦 Advisory Agent")
+    st.error("❌ Loan Rejected")
+    st.markdown("## 🚦 Advisory Agent")
     st.caption("Provides transparent rejection reasons and personalized eligibility improvement guidance")
     st.markdown('</div>', unsafe_allow_html=True)
 
