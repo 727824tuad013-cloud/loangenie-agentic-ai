@@ -254,20 +254,27 @@ elif st.session_state.stage == "sanction":
         if st.form_submit_button("Generate Sanction Letter"):
             d = st.session_state.data
             pdf = FPDF()
-            pdf.add_page()
-            pdf.set_font("Arial", size=12)
-            pdf.multi_cell(0, 10, f"""
-TATA CAPITAL – PERSONAL LOAN SANCTION LETTER
+pdf.add_page()
+pdf.set_font("Arial", size=12)
+
+letter_text = f"""
+TATA CAPITAL - PERSONAL LOAN SANCTION LETTER
 
 Name: {d['name']}
-Loan Amount: ₹{d['loan_amount']}
+Loan Amount: Rs. {d['loan_amount']}
 Tenure: {d['tenure']} months
-EMI: ₹{d['emi']}
+EMI: Rs. {d['emi']}
 Credit Score: {d['credit_score']}
 
 STATUS: APPROVED
-""")
-            pdf.output("sanction_letter.pdf")
+"""
+
+# force latin-1 safe encoding
+letter_text = letter_text.encode("latin-1", "replace").decode("latin-1")
+
+pdf.multi_cell(0, 10, letter_text)
+pdf.output("sanction_letter.pdf")
+
             st.download_button("Download PDF", open("sanction_letter.pdf", "rb"))
 
     st.markdown('</div>', unsafe_allow_html=True)
