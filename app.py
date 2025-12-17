@@ -224,6 +224,7 @@ elif st.session_state.stage == "underwriting":
 
 # ================= SANCTION AGENT =================
 # ================= SANCTION AGENT =================
+# ================= SANCTION AGENT =================
 elif st.session_state.stage == "sanction":
     log("Sanction Agent", "Loan approved")
     st.markdown('<div class="agent-card">', unsafe_allow_html=True)
@@ -235,7 +236,6 @@ elif st.session_state.stage == "sanction":
         d = st.session_state.data
 
         from fpdf import FPDF
-        from io import BytesIO
 
         pdf = FPDF()
         pdf.add_page()
@@ -244,45 +244,38 @@ elif st.session_state.stage == "sanction":
         pdf.multi_cell(0, 10, f"""
 TATA CAPITAL - PERSONAL LOAN SANCTION LETTER
 
-----------------------------------------
-
 Applicant Details
+-----------------
 Name        : {d.get('name', '')}
 Aadhaar     : {d.get('aadhaar', '')}
 City        : {d.get('city', '')}
 Employment  : {d.get('employment', '')}
 
-----------------------------------------
-
 Loan Details
+------------
 Loan Amount : Rs. {d.get('loan_amount', '')}
 Tenure      : {d.get('tenure', '')} months
 EMI         : Rs. {d.get('emi', '')}
 Credit Score: {d.get('credit_score', '')}
 
-----------------------------------------
-
 Status      : APPROVED
-
-This sanction is subject to final document verification
-and bank terms & conditions.
 
 Authorized Signatory
 TATA CAPITAL
         """)
 
-        # ---- Generate PDF in memory ----
-       pdf_bytes = pdf.output(dest="S").encode("latin-1")
-
+        # ✅ Correct FPDF in-memory generation
+        pdf_bytes = pdf.output(dest="S").encode("latin-1")
 
         st.download_button(
             label="⬇️ Download Sanction Letter (PDF)",
-            data=pdf_buffer,
+            data=pdf_bytes,
             file_name="loan_sanction_letter.pdf",
             mime="application/pdf"
         )
 
     st.markdown('</div>', unsafe_allow_html=True)
+
 
 
 # ================= REJECTION =================
