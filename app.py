@@ -272,9 +272,8 @@ TATA CAPITAL
         """)
 
         # ---- Generate PDF in memory ----
-        pdf_buffer = BytesIO()
-        pdf.output(pdf_buffer)
-        pdf_buffer.seek(0)
+       pdf_bytes = pdf.output(dest="S").encode("latin-1")
+
 
         st.download_button(
             label="⬇️ Download Sanction Letter (PDF)",
