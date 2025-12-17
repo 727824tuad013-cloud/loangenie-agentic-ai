@@ -97,17 +97,16 @@ def log(agent, msg):
     st.session_state.logs.append(f"{agent}: {msg}")
 
 # ================= SIDEBAR DASHBOARD =================
-st.sidebar.markdown("## 🏦 LoanGenie AI")
+st.sidebar.markdown("## LoanGenie AI")
 st.sidebar.caption("Agentic Loan Processing Platform")
 st.sidebar.markdown("---")
 
 if st.session_state.data:
     d = st.session_state.data
-
     for label, value in [
-        ("Loan Amount", f"₹ {d.get('loan_amount','--')}"),
+        ("Loan Amount", f"Rs. {d.get('loan_amount','--')}"),
         ("Credit Score", d.get("credit_score","--")),
-        ("EMI", f"₹ {d.get('emi','--')}")
+        ("EMI", f"Rs. {d.get('emi','--')}")
     ]:
         st.sidebar.markdown(
             f"""
@@ -120,8 +119,8 @@ if st.session_state.data:
         )
 
 # ================= MAIN HEADER =================
-st.title("🤖 LoanGenie – Agentic AI Loan Assistant")
-st.caption("“With LoanGenie AI, we’re turning every chat into a loan opportunity — making banking faster, smarter, and truly human-like.”")
+st.title("LoanGenie - Agentic AI Loan Assistant")
+st.caption("Turning every chat into a loan opportunity")
 st.divider()
 
 # ================= MASTER AGENT =================
@@ -136,11 +135,10 @@ if st.session_state.stage == "start":
 elif st.session_state.stage == "sales":
     log("Sales Agent", "Collecting loan details")
     st.markdown('<div class="agent-card">', unsafe_allow_html=True)
-    st.markdown("## 💬 Sales Agent")
-    st.caption("Collects customer intent and loan preferences")
+    st.markdown("## Sales Agent")
 
     with st.form("sales_form"):
-        loan_amount = st.number_input("Loan Amount (₹)", min_value=50000, step=50000)
+        loan_amount = st.number_input("Loan Amount", min_value=50000, step=50000)
         tenure = st.selectbox("Tenure (months)", [12, 24, 36, 48])
 
         if st.form_submit_button("Proceed to Verification"):
@@ -150,15 +148,13 @@ elif st.session_state.stage == "sales":
             })
             st.session_state.stage = "verification"
             st.rerun()
-
     st.markdown('</div>', unsafe_allow_html=True)
 
 # ================= VERIFICATION AGENT =================
 elif st.session_state.stage == "verification":
-    log("Verification Agent", "KYC & employer verification")
+    log("Verification Agent", "KYC verification")
     st.markdown('<div class="agent-card">', unsafe_allow_html=True)
-    st.markdown("## 🪪 Verification Agent")
-    st.caption("Identity, KYC & employer verification")
+    st.markdown("## Verification Agent")
 
     with st.form("kyc_form"):
         name = st.text_input("Full Name")
@@ -167,7 +163,6 @@ elif st.session_state.stage == "verification":
         city = st.text_input("City")
 
         employment = st.selectbox("Employment Type", ["Salaried", "Self-Employed"])
-
         employer_type = st.selectbox(
             "Employer Category",
             [
@@ -179,49 +174,34 @@ elif st.session_state.stage == "verification":
                 "Self-Employed"
             ]
         )
-
         company = st.text_input("Company / Organization Name")
 
-        if company:
-            valid, msg = validate_employer(company, employer_type)
-            if valid:
-                st.success(f"✔ {msg}")
-            else:
-                st.warning(f"⚠ {msg}")
-
-        if st.form_submit_button("Verify KYC & Employer"):
+        if st.form_submit_button("Verify"):
             if len(aadhaar) != 12 or not aadhaar.isdigit():
-                st.error("Invalid Aadhaar number")
+                st.error("Invalid Aadhaar")
             elif len(phone) != 10 or not phone.isdigit():
-                st.error("Invalid mobile number")
+                st.error("Invalid Phone")
             else:
-                valid, msg = validate_employer(company, employer_type)
-                if not valid:
-                    st.error(msg)
-                else:
-                    st.session_state.data.update({
-                        "name": name,
-                        "aadhaar": aadhaar,
-                        "phone": phone,
-                        "city": city,
-                        "employment": employment,
-                        "employer_type": employer_type,
-                        "company": company
-                    })
-                    st.session_state.stage = "underwriting"
-                    st.rerun()
-
+                st.session_state.data.update({
+                    "name": name,
+                    "aadhaar": aadhaar,
+                    "phone": phone,
+                    "city": city,
+                    "employment": employment,
+                    "company": company
+                })
+                st.session_state.stage = "underwriting"
+                st.rerun()
     st.markdown('</div>', unsafe_allow_html=True)
 
 # ================= UNDERWRITING AGENT =================
 elif st.session_state.stage == "underwriting":
-    log("Underwriting Agent", "Risk evaluation")
+    log("Underwriting Agent", "Risk assessment")
     st.markdown('<div class="agent-card">', unsafe_allow_html=True)
-    st.markdown("## 📊 Underwriting Agent")
-    st.caption("Income, credit score & EMI assessment")
+    st.markdown("## Underwriting Agent")
 
     with st.form("underwriting_form"):
-        income = st.number_input("Monthly Income (₹)", min_value=10000, step=5000)
+        income = st.number_input("Monthly Income", min_value=10000, step=5000)
 
         if st.form_submit_button("Evaluate Loan"):
             credit_score = random.choice([720, 750, 780])
@@ -239,25 +219,24 @@ elif st.session_state.stage == "underwriting":
                 st.session_state.stage = "sanction"
             else:
                 st.session_state.stage = "rejected"
-
             st.rerun()
-
     st.markdown('</div>', unsafe_allow_html=True)
 
 # ================= SANCTION AGENT =================
 elif st.session_state.stage == "sanction":
     log("Sanction Agent", "Loan approved")
     st.markdown('<div class="agent-card">', unsafe_allow_html=True)
-    st.success("🎉 Loan Approved")
+    st.success("Loan Approved")
 
     with st.form("sanction_form"):
         if st.form_submit_button("Generate Sanction Letter"):
             d = st.session_state.data
-            pdf = FPDF()
-pdf.add_page()
-pdf.set_font("Arial", size=12)
 
-letter_text = f"""
+            pdf = FPDF()
+            pdf.add_page()
+            pdf.set_font("Arial", size=12)
+
+            letter = f"""
 TATA CAPITAL - PERSONAL LOAN SANCTION LETTER
 
 Name: {d['name']}
@@ -268,28 +247,29 @@ Credit Score: {d['credit_score']}
 
 STATUS: APPROVED
 """
+            letter = letter.encode("latin-1", "replace").decode("latin-1")
+            pdf.multi_cell(0, 10, letter)
+            pdf.output("sanction_letter.pdf")
 
-# force latin-1 safe encoding
-letter_text = letter_text.encode("latin-1", "replace").decode("latin-1")
-
-pdf.multi_cell(0, 10, letter_text)
-pdf.output("sanction_letter.pdf")
-
-            st.download_button("Download PDF", open("sanction_letter.pdf", "rb"))
-
+            st.download_button(
+                "Download PDF",
+                data=open("sanction_letter.pdf", "rb"),
+                file_name="sanction_letter.pdf",
+                mime="application/pdf"
+            )
     st.markdown('</div>', unsafe_allow_html=True)
 
 # ================= REJECTION =================
 elif st.session_state.stage == "rejected":
     log("Underwriting Agent", "Loan rejected")
     st.markdown('<div class="agent-card">', unsafe_allow_html=True)
-    st.error("❌ Loan Rejected")
+    st.error("Loan Rejected")
     st.caption("Eligibility criteria not met")
     st.markdown('</div>', unsafe_allow_html=True)
 
 # ================= AGENT LOGS =================
 st.divider()
-st.markdown("### 🧠 Agent Activity Log")
+st.markdown("### Agent Activity Log")
 st.markdown('<div class="log-box">', unsafe_allow_html=True)
 for l in st.session_state.logs[-10:]:
     st.write("•", l)
