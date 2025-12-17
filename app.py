@@ -223,41 +223,68 @@ elif st.session_state.stage == "underwriting":
     st.markdown('</div>', unsafe_allow_html=True)
 
 # ================= SANCTION AGENT =================
+# ================= SANCTION AGENT =================
 elif st.session_state.stage == "sanction":
     log("Sanction Agent", "Loan approved")
     st.markdown('<div class="agent-card">', unsafe_allow_html=True)
-    st.success("Loan Approved")
+    st.success("🎉 Loan Approved!")
 
-    with st.form("sanction_form"):
-        if st.form_submit_button("Generate Sanction Letter"):
-            d = st.session_state.data
+    st.markdown("### 📄 Loan Sanction Letter")
 
-            pdf = FPDF()
-            pdf.add_page()
-            pdf.set_font("Arial", size=12)
+    if st.button("Generate Sanction Letter"):
+        d = st.session_state.data
 
-            letter = f"""
+        from fpdf import FPDF
+        from io import BytesIO
+
+        pdf = FPDF()
+        pdf.add_page()
+        pdf.set_font("Arial", size=12)
+
+        pdf.multi_cell(0, 10, f"""
 TATA CAPITAL - PERSONAL LOAN SANCTION LETTER
 
-Name: {d['name']}
-Loan Amount: Rs. {d['loan_amount']}
-Tenure: {d['tenure']} months
-EMI: Rs. {d['emi']}
-Credit Score: {d['credit_score']}
+----------------------------------------
 
-STATUS: APPROVED
-"""
-            letter = letter.encode("latin-1", "replace").decode("latin-1")
-            pdf.multi_cell(0, 10, letter)
-            pdf.output("sanction_letter.pdf")
+Applicant Details
+Name        : {d.get('name', '')}
+Aadhaar     : {d.get('aadhaar', '')}
+City        : {d.get('city', '')}
+Employment  : {d.get('employment', '')}
 
-            st.download_button(
-                "Download PDF",
-                data=open("sanction_letter.pdf", "rb"),
-                file_name="sanction_letter.pdf",
-                mime="application/pdf"
-            )
+----------------------------------------
+
+Loan Details
+Loan Amount : Rs. {d.get('loan_amount', '')}
+Tenure      : {d.get('tenure', '')} months
+EMI         : Rs. {d.get('emi', '')}
+Credit Score: {d.get('credit_score', '')}
+
+----------------------------------------
+
+Status      : APPROVED
+
+This sanction is subject to final document verification
+and bank terms & conditions.
+
+Authorized Signatory
+TATA CAPITAL
+        """)
+
+        # ---- Generate PDF in memory ----
+        pdf_buffer = BytesIO()
+        pdf.output(pdf_buffer)
+        pdf_buffer.seek(0)
+
+        st.download_button(
+            label="⬇️ Download Sanction Letter (PDF)",
+            data=pdf_buffer,
+            file_name="loan_sanction_letter.pdf",
+            mime="application/pdf"
+        )
+
     st.markdown('</div>', unsafe_allow_html=True)
+
 
 # ================= REJECTION =================
 elif st.session_state.stage == "rejected":
